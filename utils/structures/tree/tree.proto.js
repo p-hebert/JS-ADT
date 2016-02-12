@@ -2,19 +2,13 @@
 * Tree Prototype
 * Implementation of the Generic Tree ADT with Generics enabled.
 * If the type is not specified, act as a Tree ADT without Generics.
-* @param type {object / function} Either an object of the Generic type or the
-* constructor of the Generic type. Requires a constructor function.
+* @param T Either an primitive type, an object of the Generic type or the
+* constructor of the Generic type. For object Generics, requires a constructor function.
 **/
-function Tree(type, node){
+function Tree(T, node){
   this._root = undefined;
   this._size = 0;
-
-  //type is an object if the generic type
-  if(type !== undefined && typeof type.constructor === 'function'){
-    this._type = type;
-  }else{
-    this._type = undefined;
-  }
+  this._generics = (T !== undefined)? new Generics(T) : undefined;
 
   if(node !== undefined){
     this._validate(node);
@@ -27,25 +21,6 @@ function Tree(type, node){
 
 Tree.prototype.constructor = Tree;
 
-/**
-* Internal method that emulates Generics behaviour
-* @return {boolean} True if the element is of the Generics type or if Generics
-* are disabled.
-* @throws {IllegalArgumentException} If the element does not match the Generics type
-**/
-Tree.prototype._checkType = function(element){
-  if(this._type !== undefined){
-    if(element instanceof this._type){
-      return true;
-    }else{
-      console.error(element);
-      throw new IllegalArgumentException("Parameter does not match the Generic Type " + this._type.name);
-    }
-  }else{
-    return true;
-  }
-};
-
 Tree.prototype._validate = function(node){
   if(!(node instanceof Node)){
     console.error(node);
@@ -55,7 +30,7 @@ Tree.prototype._validate = function(node){
     console.error(node);
     throw new IllegalArgumentException("node is its own parent");
   }
-  this._checkType(node.getElement());
+  if(this._generics !== undefined) this._generics.checkType(element);
   return node;
 };
 
@@ -113,7 +88,7 @@ Tree.prototype.addRoot = function(element){
   if(!this.isEmpty()){
     throw new IllegalStateException("Tree already has a root.");
   }
-  if(this._checkType(element)){
+  if(this._generics === undefined || this._generics.checkType(element)){
     this._root = new Node(element, undefined, []);
     this._size++;
   }
@@ -122,7 +97,7 @@ Tree.prototype.addRoot = function(element){
 
 Tree.prototype.addChild = function(parent, element){
   this._validate(parent);
-  if(this._checkType(element)){
+  if(this._generics === undefined || this._generics.checkType(element)){
     var child = new Node(element, parent, []);
     parent.addChild(child);
     this._size++;
@@ -133,7 +108,7 @@ Tree.prototype.addChild = function(parent, element){
 
 Tree.prototype.set = function(node, element){
   var tmp = this._validate(node).getElement();
-  if(this._checkType(element)){
+  if(this._generics === undefined || this._generics.checkType(element)){
     node.setElement(element);
     return tmp;
   }else{

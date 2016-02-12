@@ -3,49 +3,24 @@
 * Implementation of the Stack ADT with Generics enabled.
 * If the type is not specified, act as a Stack ADT without Generics.
 * @param capacity {int} Maximum capacity of the stack.
-* @param type {object / function} Either an object of the Generic type or the
-* constructor of the Generic type. Requires a constructor function.
+* @param T Either an primitive type, an object of the Generic type or the
+* constructor of the Generic type. For object Generics, requires a constructor function.
 **/
-function Stack(capacity, type){
+function Stack(capacity, T){
   this._data = [];
+  this._generics = (T !== undefined)? new Generics(T) : undefined;
   /*
   * Maximum capacity of the Stack.
   * Acts as upper bound for the _data.length
   * @default: 18000 ; 5 transmission per second, for an hour.
   */
   this._capacity =  (capacity !== undefined && capacity > 0)? capacity : 18000;
-
-  //type is an object if the generic type
-  if(type !== undefined && typeof type.constructor === 'function'){
-    this._type = type;
-  }else{
-    this._type = undefined;
-  }
 }
 
 Stack.prototype.constructor = Stack;
 
-/**
-* Internal method that emulates Generics behaviour
-* @return {boolean} True if the element is of the Generics type or if Generics
-* are disabled.
-* @throws {IllegalArgumentException} If the element does not match the Generics type
-**/
-Stack.prototype._checkType = function(element){
-  if(this._type !== undefined){
-    if(element instanceof this._type){
-      return true;
-    }else{
-      console.error(element);
-      throw new IllegalArgumentException("Parameter does not match the Generic Type " + this._type.name);
-    }
-  }else{
-    return true;
-  }
-};
-
 Stack.prototype.push = function(element){
-  if(this._checkType(element)){
+  if(this._generics === undefined || this._generics.checkType(element)){
     while(this._data.length >= this._capacity){
       this._data.shift();
     }

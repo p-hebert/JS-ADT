@@ -48,4 +48,6 @@ var Generics = (function() {
       return true;
     }
   };
+
+  return Generics;
 }());
