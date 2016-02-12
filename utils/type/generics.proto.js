@@ -49,5 +49,14 @@ var Generics = (function() {
     }
   };
 
+  Generics.prototype.getType = function(){
+    return privateData.get(this).type;
+  };
+
+  Generics.prototype.isPrimitive = function(){
+    var T = private.Data.get(this).type;
+    return (typeof T !== 'function' && typeof T !== undefined);
+  };
+
   return Generics;
 }());
