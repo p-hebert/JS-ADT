@@ -30,7 +30,7 @@ Tree.prototype._validate = function(node){
     console.error(node);
     throw new IllegalArgumentException("node is its own parent");
   }
-  if(this._generics !== undefined) this._generics.checkType(element);
+  if(this._generics !== undefined) this._generics.checkType(node.getElement());
   return node;
 };
 

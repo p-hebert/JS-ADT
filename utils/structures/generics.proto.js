@@ -32,7 +32,7 @@ var Generics = (function() {
       if(t instanceof T){
         return true;
       }else{
-        console.error(T);
+        console.error(t);
         throw new IllegalArgumentException("Parameter does not match the Generic Type " + T.name);
       }
     }else if(typeof T === 'string'){
