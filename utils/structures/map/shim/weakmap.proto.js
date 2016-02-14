@@ -72,10 +72,8 @@ if (typeof WeakMap === 'undefined' ||
     };
 
     WeakMap.prototype.set = function(k,v){
-      var map = privateData[this.uuid],
-          set = false;
-      if(k !== undefined && k !== null && (typeof k === 'object' || typeof k === 'function') &&
-         v !== undefined && v !== null){
+      var map = privateData[this.uuid];
+      if(k !== undefined && k !== null && (typeof k === 'object' || typeof k === 'function')){
         if(k[map.id] === undefined){
           Object.defineProperty(k, map.id, {
             writable: true,
