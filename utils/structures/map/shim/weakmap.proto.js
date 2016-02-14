@@ -4,12 +4,15 @@
 * To be used as a shim if the native ECMAScript version is not available.
 * Be sure to use the WeakMap.prototype.destroy() method upon destruction of the
 * WeakMap instance, in order to remove the reference from the privateData object.
-* @import com.jsadt.utils.structures.map.shim.WeakMap
 **/
-if (typeof WeakMap === 'undefined') {
+if (typeof WeakMap === 'undefined' ||
+    ($global && $global.test && $global.test.flags && $global.test.flags.WeakMap)) {
   (function(){
 
-    var privateData = {};
+    //Private Store for members of WeakMap
+    var privateData = { };
+    //To ensure map id non-writability
+    var keySet = [];
 
     //Source
     //http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
@@ -26,12 +29,24 @@ if (typeof WeakMap === 'undefined') {
     }
 
     function WeakMap(iterable){
-      var uuid;
+      var uuid,id;
+      //To ensure uniqueness of Private Store Key
       do{
         uuid = generateUUID();
       }while(privateData[uuid]);
+      //To ensure uniqueness of Map Key
+      do{
+        id = generateUUID();
+      }while(keySet.indexOf(id) !== -1);
+
       this.uuid = uuid;
-      privateData[uuid] = [];
+      privateData[uuid] = {
+        keys: [],
+        values: [],
+        id: id,
+        index: 0
+      };
+
       if(iterable !== undefined && Array.isArray(iterable)){
         for(var i = 0 ; i < iterable.length; i++){
           if(Array.isArray(iterable[i]) && iterable[i].length === 2){
@@ -49,59 +64,87 @@ if (typeof WeakMap === 'undefined') {
 
     WeakMap.prototype.get = function(k){
       var map = privateData[this.uuid];
-      if(k !== undefined && k !== null){
-        for(var i = 0 ; i < map.length ; i++){
-          if(map[i][0] === k){
-            return map[i][1];
-          }
-        }
+      if(k !== undefined && k !== null && k[map.id] !== undefined){
+        return map.values[k[map.id]];
+      }else{
+        return undefined;
       }
-      return undefined;
     };
 
     WeakMap.prototype.set = function(k,v){
       var map = privateData[this.uuid],
           set = false;
-      if(k !== undefined && k !== null && v !== undefined && v !== null){
-        for(var i = 0 ; i < map.length ; i++){
-          if(map[i][0] === k){
-            map[i][1] = v;
-            set = true;
-            break;
-          }
+      if(k !== undefined && k !== null && (typeof k === 'object' || typeof k === 'function') &&
+         v !== undefined && v !== null){
+        if(k[map.id] === undefined){
+          Object.defineProperty(k, map.id, {
+            writable: true,
+            enumerable: false,
+            configurable: true,
+            value: map.index++
+          });
+          map.keys.push(k);
+          map.values.push(v);
+        }else if(k[map.id] === null){
+          k[map.id] = map.index++;
+          map.keys.push(k);
+          map.values.push(v);
+        }else{
+          map.values.push(v);
         }
-        if(!set){
-          map.push([k, v]);
-        }
+        return this;
+      }else{
+        throw new TypeError("Invalid value used as weak map key");
       }
-      return this;
     };
 
+    /**
+    * WeakMap Delete Operation
+    * Optimized for time complexity.
+    * Runs in O(1). Could run in O(n) if optimized for space complexity.
+    * It turns out that if it is optimized for space complexity (see commented
+    * out code), the browser takes a seemingly infinite amount of time to compute.
+    * I am aware of how memory inefficient this is, but I couldn't find any better.
+    * @param k Key Object
+    * @return Returns true or false depending on whether object has been
+    *         successfully deleted or not
+    **/
     WeakMap.prototype.delete = function(k){
       var map = privateData[this.uuid];
-      if(k !== undefined && k !== null){
-        for(var i = 0 ; i < map.length ; i++){
-          if(map[i][0] === k){
-            map.splice(i, 1);
-            return true;
-          }
+      if(k !== undefined && k !== null && k[map.id] !== undefined){
+        //Optimized for space complexity, O(n)
+        /*
+        var i = k[map.id];
+        k[map.id] = null;
+        map.keys.splice(i, 1);
+        map.values.splice(i, 1);
+        map.index--;
+        for(;i < map.keys.length; i++){
+          var key = map.keys[i];
+          key[map.id] = i;
         }
+        */
+        //Optimized for time complexity, leaves memory leaks
+        //The delete operator is ridiculously time consuming
+        //hence the references are simply updated to null
+        var i = k[map.id];
+        k[map.id] = null;
+        map.keys[i] = null;
+        map.values[i] = null;
+        return true;
       }
       return false;
     };
 
     WeakMap.prototype.has = function(k){
       var map = privateData[this.uuid];
-      if(k !== undefined && k !== null){
-        for(var i = 0 ; i < map.length ; i++){
-          if(map[i][0] === k){
-            return true;
-          }
-        }
-      }
-      return false;
+      return k !== undefined && k !== null && k[map.id] !== undefined && map.keys[k[map.id]] !== undefined;
     };
 
-    window.WeakMap = WeakMap;
+    if(!($global && $global.test && $global.test.flags && $global.test.flags.WeakMap)){
+      window.WeakMap = WeakMap;
+    }else{
+      $global.test.types.WeakMap = WeakMap;
+    }
   })();
 }
