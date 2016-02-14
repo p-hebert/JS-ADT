@@ -143,6 +143,60 @@ if (typeof WeakMap === 'undefined' ||
       return k !== undefined && k !== null && k[map.id] !== undefined && map.keys[k[map.id]] !== undefined;
     };
 
+    WeakMap.prototype.entries = function(){
+      var map = privateData[this.uuid],
+          entries = [];
+      for(var i = 0 ; i < map.keys.length ; i++){
+        var key = map.keys[i],
+            val = map.values[i];
+        if(key !== null){
+          entries.push([key,val]);
+        }
+      }
+      return entries;
+    };
+
+    WeakMap.prototype.forEach = function(callback, thisArg){
+      var map = privateData[this.uuid];
+      for(var i = 0 ; i < map.keys.length ; i++){
+        var key = map.keys[i],
+            val = map.values[i];
+        if(key !== null){
+          if(thisArg !== undefined){
+            thisArg.callback(key, val);
+          }else{
+            callback(key, val);
+          }
+        }
+      }
+    };
+
+    WeakMap.prototype.keys = function(){
+      var map = privateData[this.uuid],
+          arr = [];
+      for(var i = 0 ; i < map.keys.length ; i++){
+        var key = map.keys[i];
+        if(key !== null){
+          arr.push(key);
+        }
+      }
+      return arr;
+    };
+
+    WeakMap.prototype.values = function(){
+      var map = privateData[this.uuid],
+          arr = [];
+      for(var i = 0 ; i < map.keys.length ; i++){
+        var key = map.keys[i],
+            val = map.values[i];
+        if(key !== null){
+          arr.push(val);
+        }
+      }
+      return arr;
+    };
+
+
     if(!($global && $global.test && $global.test.flags && $global.test.flags.WeakMap)){
       window.WeakMap = WeakMap;
     }else{
@@ -272,7 +326,6 @@ if (typeof WeakMap === 'undefined' ||
           callback(key, val);
         }
       }
-      return entries;
     };
 
     WeakMap.prototype.keys = function(){
