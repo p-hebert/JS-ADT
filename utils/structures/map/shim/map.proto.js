@@ -36,6 +36,37 @@ if (typeof Map === 'undefined' ||
           }
           return false;
         },
+        entries: function(){
+          var entries = [];
+          for(key in this.store){
+            entries.push([key, this.store[key]]);
+          }
+          return entries;
+        },
+        forEach: function(callback, thisArg){
+          for(key in this.store){
+            if(thisArg !== undefined){
+              thisArg.callback(key, this.store[key]);
+            }else{
+              callback(key, this.store[key]);
+            }
+          }
+        },
+        keys: function(){
+          var keys = [];
+          for(key in this.store){
+            keys.push(key);
+          }
+          return keys;
+        },
+        values: function(){
+          var values = [];
+          for(key in this.store){
+            values.push(this.store[key]);
+          }
+          return values;
+        },
+
         store: {}
       };
     }
@@ -144,6 +175,56 @@ if (typeof Map === 'undefined' ||
       }else{
         return map.hash.get(k) && true;
       }
+    };
+
+    Map.prototype.entries = function(){
+      var map = privateData.get(this),
+          entries = [],
+          wmEntries = map.weak.entries(),
+          hhEntries = map.hash.entries();
+      if(map.nullIsIndex) entries.push(['null', map['null']]);
+      if(map.undefinedIsIndex) entries.push(['undefined', map['undefined']]);
+      return Array.prototype.concat.apply([], entries, wmEntries, hhEntries);
+    };
+
+    Map.prototype.forEach = function(callback, thisArg){
+      var map = privateData.get(this);
+      map.weak.forEach(callback, thisArg);
+      map.hash.forEach(callback, thisArg);
+      if(map.nullIsIndex){
+        if(thisArg !== undefined){
+          thisArg.callback('null', map['null']);
+        }else{
+          callback('null', map['null']);
+        }
+      }
+      if(map.undefinedIsIndex){
+        if(thisArg !== undefined){
+          thisArg.callback('undefined', map['undefined']);
+        }else{
+          callback('undefined', map['undefined']);
+        }
+      }
+    };
+
+    Map.prototype.keys = function(){
+      var map = privateData.get(this),
+          keys = [],
+          wmKeys = map.weak.keys(),
+          hhKeys = map.hash.keys();
+      if(map.nullIsIndex) keys.push('null');
+      if(map.undefinedIsIndex) keys.push('undefined');
+      return Array.prototype.concat.apply([], keys, wmKeys, hhKeys);
+    };
+
+    Map.prototype.values = function(){
+      var map = privateData.get(this),
+          values = [],
+          wmValues = map.weak.values(),
+          hhValues = map.hash.values();
+      if(map.nullIsIndex) values.push(map['null']);
+      if(map.undefinedIsIndex) values.push(map['undefined']);
+      return Array.prototype.concat.apply([], values, wmValues, hhValues);
     };
 
     if(!($global && $global.test && $global.test.flags && $global.test.flags.Map)){
