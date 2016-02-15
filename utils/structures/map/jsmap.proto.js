@@ -1,7 +1,6 @@
 /**
 * Map Prototype
-* Nomenclature chosen not to shadow native ECMAScript 2015 Map and
-* com.JS.utils.structures.map.shim.JSMap
+* Nomenclature chosen not to shadow native ECMAScript 2015 Map
 * Implementation of the Map ADT with Generics enabled.
 * @import com.jsadt.utils.type.generics
 * @import com.jsadt.utils.structures.map.shim.*
@@ -42,7 +41,7 @@ var JSMap = (function (){
   JSMap.prototype.set = function(k,v){
     var map = privateData.get(this),
         kMatchesGeneric  = !map.generics.key || map.generics.key.checkType(k),
-        vMatchesGeneric = !map.generics.val || map.generics.val.checkType(v);
+        vMatchesGeneric = !map.generics.val || v === null || map.generics.val.checkType(v) ;
     map.map.set(k,v);
     return this;
   };
