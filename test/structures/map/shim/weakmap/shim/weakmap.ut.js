@@ -322,7 +322,6 @@ try
         console.log("STEP 5: PASSED");
       }
     }catch(e){
-      $global.test.flags.WeakMap.steps.push(flag);
       if(flag.cases[0] !== false){
         console.error("STEP 5: FAILED");
         console.error("SET Operation with Primitive Key behaves differently betwen ECMA and shim.\nECMA accepts input while shim refuses");
@@ -349,7 +348,6 @@ try
         flag.success = false;
       }
     }catch(e){
-      $global.test.flags.WeakMap.steps.push(flag);
       if(flag.cases[1] !== false){
         console.error("SET Operation with Undefined Key behaves differently betwen ECMA and shim.\nECMA accepts input while shim refuses");
         flag.success = false;
@@ -373,7 +371,6 @@ try
         flag.success = false;
       }
     }catch(e){
-      $global.test.flags.WeakMap.steps.push(flag);
       if(flag.cases[2] !== false){
         console.error("SET Operation with Null Key behaves differently betwen ECMA and shim.\nECMA accepts input while shim refuses");
         flag.success = false;
@@ -430,7 +427,6 @@ try
         flag.success = true;
       }
     }catch(e){
-      $global.test.flags.WeakMap.steps.push(flag);
       if(flag.cases[0] !== false){
         console.error("STEP 6: FAILED");
         console.error("SET Operation with Primitive Key behaves differently betwen ECMA and shim.\nECMA accepts input while shim refuses");
@@ -439,6 +435,131 @@ try
         console.log("STEP 6: PASSED");
         flag.success = true;
       }
+    }
+
+    flag.times.end = Date.now();
+    $global.test.flags.WeakMap.steps.push(flag);
+  }
+
+  /*---STEP 7: ENHANCED FEATURES TEST---*/
+  //Testing for ENTRIES, KEYS, VALUES, FOREACH functions
+  {
+    console.log("STEP 7: ENHANCED FEATURES TEST");
+
+    var flag =
+    {
+      success: false,
+      times: {
+        start: Date.now(),
+        end: undefined,
+        cases: {
+          entries: {
+            start: undefined,
+            end: undefined,
+          },
+          values: {
+            start: undefined,
+            end: undefined,
+          },
+          keys: {
+            start: undefined,
+            end: undefined,
+          },
+          forEach: {
+            start: undefined,
+            end: undefined,
+          },
+        },
+      },
+    };
+    var entries, values, keys, valid = {};
+
+    console.log("Resetting WeakMap Shim object");
+    jswm.destroy();
+    jswm = new $global.test.types.WeakMap();
+    for(key in map){
+      jswm.set(map[key][0], map[key][1]);
+    }
+
+    console.log("Obtaining Entries");
+    flag.times.cases.entries.start = Date.now();
+    entries = jswm.entries();
+    flag.times.cases.entries.end = Date.now();
+
+    console.log("Verifying Entries");
+    valid.entries = true;
+    for(var i = 0 ; i < entries.length ; i++){
+      if(map[entries[i][0].uuid] === undefined){
+        valid.entries = false;
+        break;
+      }
+    }
+    if(valid.entries){
+      console.log("STEP 7 [ENTRIES]: PASSED");
+    }else{
+      console.error("STEP 7 [ENTRIES]: FAILED");
+    }
+
+    console.log("Obtaining Keys");
+    flag.times.cases.keys.start = Date.now();
+    keys = jswm.keys();
+    flag.times.cases.keys.end = Date.now();
+
+    console.log("Verifying Keys");
+    valid.keys = true;
+    for(var i = 0 ; i < keys.length ; i++){
+      if(map[keys[i].uuid] === undefined){
+        valid.keys = false;
+        break;
+      }
+    }
+
+    if(valid.keys){
+      console.log("STEP 7 [KEYS]: PASSED");
+    }else{
+      console.error("STEP 7 [KEYS]: FAILED");
+    }
+
+    console.log("Obtaining Values");
+    flag.times.cases.values.start = Date.now();
+    values = jswm.values();
+    flag.times.cases.values.end = Date.now();
+
+    console.log("Verifying Values");
+    valid.values = true;
+
+    for(key in map){
+      if(values.indexOf(map[key][1]) === -1){
+        valid.values = false;
+        break;
+      }
+    }
+
+    if(valid.values){
+      console.log("STEP 7 [VALUES]: PASSED");
+    }else{
+      console.error("STEP 7 [VALUES]: FAILED");
+    }
+
+    console.log("Using forEach");
+    var caller = {count: 0 , callback: function(){this.count++;}};
+    flag.times.cases.forEach.start = Date.now();
+    jswm.forEach(caller.callback, caller);
+    valid.forEach = (caller.count === count)? true : false;
+    flag.times.cases.forEach.end = Date.now();
+
+    if(valid.forEach){
+      console.log("STEP 7 [FOREACH]: PASSED");
+    }else{
+      console.error("STEP 7 [FOREACH]: FAILED");
+    }
+
+    //Determining success
+    flag.success = valid.entries && valid.keys && valid.values && valid.forEach;
+    if(flag.success){
+      console.log("STEP 7: PASSED");
+    }else{
+      console.error("STEP 7: FAILED");
     }
 
     flag.times.end = Date.now();
@@ -476,6 +597,12 @@ try
   console.log("  ECMA DELETE:  " + (steps[3].times.delete.ecma.end - steps[3].times.delete.ecma.start));
   console.log("  SHIM DELETE:  " + (steps[3].times.delete.shim.end - steps[3].times.delete.shim.start));
   console.log("STEP 5:         " + (steps[4].times.end - steps[4].times.start));
+  console.log("STEP 6:         " + (steps[5].times.end - steps[5].times.start));
+  console.log("STEP 7:         " + (steps[6].times.end - steps[6].times.start));
+  console.log("  ENTRIES:      " + (steps[6].times.cases.entries.end - steps[6].times.cases.entries.start));
+  console.log("  KEYS:         " + (steps[6].times.cases.keys.end - steps[6].times.cases.keys.start));
+  console.log("  VALUES:       " + (steps[6].times.cases.values.end - steps[6].times.cases.values.start));
+  console.log("  FOREACH:      " + (steps[6].times.cases.forEach.end - steps[6].times.cases.forEach.start));
   console.log("TOTAL:          " + ($global.test.flags.WeakMap.end - $global.test.flags.WeakMap.start));
 }
 catch(e){

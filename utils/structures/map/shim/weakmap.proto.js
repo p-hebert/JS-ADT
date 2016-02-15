@@ -6,7 +6,8 @@
 * WeakMap instance, in order to remove the reference from the privateData object.
 **/
 if (typeof WeakMap === 'undefined' ||
-    ($global && $global.test && $global.test.flags && $global.test.flags.WeakMap)) {
+    ($global && $global.test && $global.test.flags && $global.test.flags.WeakMap &&
+     $global.test.flags.WeakMap.enabled === 'shim')) {
   (function(){
 
     //Private Store for members of WeakMap

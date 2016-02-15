@@ -1,5 +1,5 @@
 $global.test.flags.WeakMap = {
-  enabled: true,
+  enabled: 'shim',
   steps: [],
   start: undefined,
   end: undefined,
