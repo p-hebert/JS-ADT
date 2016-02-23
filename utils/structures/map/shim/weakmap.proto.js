@@ -274,7 +274,7 @@ if (typeof WeakMap === 'undefined' ||
     WeakMap.prototype.size = 0;
 
     WeakMap.prototype.get = function(k){
-      return privateData.get(this).wm.set(k,v);
+      return privateData.get(this).wm.get(k);
     };
 
     WeakMap.prototype.set = function(k,v){
