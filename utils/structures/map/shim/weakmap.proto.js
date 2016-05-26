@@ -340,8 +340,15 @@ if (typeof WeakMap === 'undefined' ||
     };
 
     WeakMap.prototype.keys = function(){
-      var map = privateData.get(this);
-      return map.keys.slice();
+      var map = privateData.get(this),
+          keys = [],
+          key;
+      for(var i = 0 ; i < map.keys.length ; i++){
+        key = map.keys[i];
+        if(key !== null){
+          keys.push(map.keys[i]);
+        }
+      }
     };
 
     WeakMap.prototype.values = function(){
