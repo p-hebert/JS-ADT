@@ -149,7 +149,7 @@ if (typeof WeakMap === 'undefined' ||
           entries = [],
           key, val;
       for(var i = 0 ; i < map.keys.length ; i++){
-        key = map.keys[i],
+        key = map.keys[i];
         val = map.values[i];
         if(key !== null){
           entries.push([key,val]);
