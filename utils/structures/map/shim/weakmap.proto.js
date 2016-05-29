@@ -349,6 +349,7 @@ if (typeof WeakMap === 'undefined' ||
           keys.push(map.keys[i]);
         }
       }
+      return keys;
     };
 
     WeakMap.prototype.values = function(){
